@@ -1,0 +1,74 @@
+#!/usr/bin/env python2
+# coding=utf-8
+"""
+Finding the sender of an email
+"""
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import print_function
+import sys
+
+
+def find_sender(email):
+    """Returns the sender's name as a string in the format 
+    'First Initial Last <address>', e.g. 'Charyl D Mills <cdmills@state.gov>'
+    Args:
+        email: unicode -- entire email message from a file
+    Returns:
+        unicode
+    """
+    file = open(email)
+    lines = file.readlines()
+    file.close()
+    if line.startswith("From: "): # to make sure that sender_inf[6:]
+        # won't delete important characters, make sure that "From: " exists
+        # create a variable sender_inf that looks for the occurence of ">"
+        # which marks the end of sender information
+        # only first occurence is of interest, therefore "partition" is
+        # used instead of split
+        sender_inf, sep, rest = lines.partition(">",1)[0]
+        # strip off "From: " (firt 6 symbols)
+        sender_inf = sender_inf[6:]
+    # extract name
+    # middle initial must not have special attention
+    # can be combined with first
+    name = sender_inf.partition("<",1)[0]
+    # check for information structure
+    if "," in name:
+        last_name = name.partition(",", 1)[0]
+        a, first_middle = name.split(" ")
+    else:
+        first_middle, last_name = name.split(" ")        
+    # extract email adress
+    x, email_adress = sender_inf.split("<")
+    # correct mistakes that were induced by OCR scanning
+    # when checking the mails, the following two seemed
+    # to be the only email programms used
+    if "@state.gov" or "@clintonemail.com" in email:
+        pass
+    # I thought of elif here but it seemed inappropriate to me since
+    # intuitively elif asks whether one of the below is true
+    # but there might be more than one mistake
+    else:
+        if "©" in email_adress:
+            email_adress = email_adress.replace("©", "@")
+        if "," in email_adress:
+            email_adress = email_adress.replace(",",".")
+        if "goy" in email_adress:
+            email_adress = email_adress.replace("goy", "gov")
+        if "clintonemai1" in email_adress:
+            email_adress = email_adress.replace("clintonemai1", "clintonemail")
+    
+    return first_middle, last_name, "<", email_adress.lower(), ">"
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("First argument must be a filename.")
+        sys.exit(2)
+
+    with open(sys.argv[1]) as f:
+        # Files are saved utf-8 encoded, so we decode into Unicode here.
+        email = f.read().decode('utf-8')
+
+    print(find_sender(email))
