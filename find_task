@@ -1,0 +1,63 @@
+#!/usr/bin/env python2
+# coding=utf-8
+"""
+Finding Tasks within an email
+"""
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import print_function
+import sys
+import re
+
+
+def find_task(email):
+    """Returns the the first task we identify in an email. Task can have the
+    form of imperatives, questions ("can you print this please?"), or possibly
+    other. This method only returns the part of the email that contains the
+    task.
+    Args:
+        email: unicode -- entire email message from a file
+    Returns:
+        unicode or None if there is no task.
+    """
+     file = open(email)
+    lines = file.readlines()
+    file.close()
+    # it seems that there are verbs very commonly used in requests
+    # in order not to have to type them all twice with lower and upper case
+    lines = lines.lower()
+    verb = ["could", "would", "remind", "remember", "can", "will", "schedule",
+            "do"]
+    person = ["i", "you", "he", "she", "it", "we", "they", "u", "me",
+              "my", "your", "his", "her", "our", "their"]
+    # if the structure is either verb, person, rest of sentence
+    sentence_structure1 = "%r, %r" %verb, %person
+    sentence_structure2 = ""please" %r, %r"
+    # (I feel like this is wrong but its the bestI could come up with)
+    if sentence_structure1 in lines:
+    # if 1 is the sentence structure, separate the combination
+    # from what was before the sentence
+        rest, sep, sentence_long = lines.partition(sentence_struture1,1)[0]
+    # and what follows after "."
+        sentence, sep2, rest2 = sentence_long.partition(".",1)[0]
+    # or "please", verb, person, bla
+    elif sentence_structure2 in lines:
+    # if 2 is the sentence structure, separate the combination
+    # from what was before the sentence
+        rest, sep, sentence_long = lines.partition(sentence_struture2,1)[0]
+    # and what follows after "."
+        sentence, sep2, rest2 = sentence_long.partition(".",1)[0]
+    # also I was thinking about searching for all "?", but I do not think
+    # that is necessary as the structure of a question is already represented
+    # by the two above sentence structures
+    return sentence
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("First argument must be a filename.")
+        sys.exit(2)
+
+    with open(sys.argv[1]) as f:
+        email = f.read().decode('utf-8')
+
+    print(find_task(email))
